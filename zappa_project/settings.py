@@ -9,10 +9,13 @@ https://docs.djangoproject.com/en/4.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
-
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
@@ -38,6 +41,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'django_s3_storage',
+    'storages',
+    'store'
 ]
 
 MIDDLEWARE = [
@@ -75,13 +82,23 @@ WSGI_APPLICATION = 'zappa_project.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'demo_1',
+#         'USER': 'Anna',
+#         'PASSWORD': '(itStHFLk6a(g3&',
+#         'HOST': 'test-database-1.cd0tyxsayggv.us-east-1.rds.amazonaws.com',
+#         'PORT': '5432',
+#     }
+# }
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': config('DB_NAME', default=''),
         'USER': config('DB_USER_NAME', default=''),
         'PASSWORD': config('DB_PASSWORD', default=''),
-        'HOST': config('DB_HOST', default='db'),
+        'HOST': config('DB_HOST', default=''),
         'PORT': config('DB_PORT', default=''),
     }
 }
@@ -121,14 +138,51 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
-STATIC_URL = 'static/'
+# STATIC_URL = 'static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# sentry_sdk.init(
+#     dsn=config('DSN_KEY', default=''),
+#     integrations=[
+#         DjangoIntegration(),
+#     ],
+#     traces_sample_rate=1.0,
+#     send_default_pii=True
+# )
+
+# AWS
+
+# S3_DEFAULT_BUCKET = config("S3_DEFAULT_BUCKET", "demo-zappa-bucket")
+#
+# STATICFILES_STORAGE = "django_s3_storage.storage.StaticS3Storage"
+# AWS_S3_BUCKET_NAME_STATIC = S3_DEFAULT_BUCKET
+# AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % S3_DEFAULT_BUCKET
+# STATIC_URL = "https://%s/" % AWS_S3_CUSTOM_DOMAIN
+# AWS_DEFAULT_ACL = None
+
+# AWS
+S3_DEFAULT_BUCKET = config("S3_DEFAULT_BUCKET", "zappa-qgq5iinqr")
+S3_FILE_BUCKET = config("S3_FILE_BUCKET", "demo-zappa-bucket")
+
+STATICFILES_STORAGE = "django_s3_storage.storage.StaticS3Storage"
+AWS_S3_BUCKET_NAME_STATIC = S3_DEFAULT_BUCKET
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % S3_DEFAULT_BUCKET
+STATIC_URL = "https://%s/" % AWS_S3_CUSTOM_DOMAIN
+
 AWS_ACCESS_KEY_ID = config("SERVER_AWS_ACCESS_KEY_ID", '')
 AWS_SECRET_ACCESS_KEY = config('SERVER_AWS_SECRET_ACCESS_KEY', '')
-AWS_STORAGE_BUCKET_NAME = config('SERVER_AWS_STORAGE_BUCKET_NAME', 'zappa-msq-dev')
+AWS_STORAGE_BUCKET_NAME = config('SERVER_AWS_STORAGE_BUCKET_NAME', 'zappa-qgq5iinqr')
 AWS_S3_REGION_NAME = 'us-east-1'
+
+AWS_S3_ADDRESSING_STYLE = "virtual"
+AWS_S3_SIGNATURE_VERSION = 's3v4'
+AWS_DEFAULT_ACL = None
+AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
+AWS_S3_OBJECT_PARAMETERS = {'CacheControl': 'max-age=86400'}
