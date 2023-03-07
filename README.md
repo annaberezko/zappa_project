@@ -1,3 +1,11 @@
+## Zappa
+
+```
+pip install zappa
+zappa init
+zappa deploy
+```
+
 ## Set staticfiles to AWS
 #### Paste these environment variables into `.env` file inside the project
 
