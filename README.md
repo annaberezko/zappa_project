@@ -1,5 +1,19 @@
 ## Zappa
 
+Create a IAM aws user 
+Attach policies directly
+```
+AmazonS3FullAccess
+```
+Set up aws and check 
+```
+aws --version
+```
+Then set up your user credentials
+```
+aws configure
+```
+Then setup zappa
 ```
 pip install zappa
 zappa init
